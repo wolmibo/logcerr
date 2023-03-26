@@ -13,11 +13,11 @@ static_assert(__cpp_lib_format >= 201907L);
 
 if not compiler.compiles(code)
   dependencies += dependency('fmt')
-  format_library = 'fmt::format'
+  format_library = 'fmt'
 else
-  format_library = 'std::format'
+  format_library = 'std'
 endif
-summary('logcerr::format', format_library)
+summary('format library', format_library)
 
 
 
@@ -33,7 +33,14 @@ headers = [
 
 include_directories = ['include', '.']
 
+
+
 install_project = not meson.is_subproject() or get_option('install_as_subproject')
+
+if meson.is_subproject()
+  summary('install', install_project)
+endif
+
 
 
 logcerr = library(
