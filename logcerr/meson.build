@@ -33,7 +33,7 @@ headers = [
 
 include_directories = ['include', '.']
 
-install_project = not meson.is_subproject() or get_option('install-as-subproject')
+install_project = not meson.is_subproject() or get_option('install_as_subproject')
 
 
 logcerr = library(
