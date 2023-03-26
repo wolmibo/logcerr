@@ -1,0 +1,13 @@
+Checks: >
+  bugprone-*,
+  concurrency-*,
+  cppcoreguidelines-*,
+    -cppcoreguidelines-avoid-non-const-global-variables,
+  misc-*,
+  modernize-*,
+    -modernize-use-trailing-return-type,
+  performance-*,
+  readability-*
+
+
+UseColor: true
