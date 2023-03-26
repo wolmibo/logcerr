@@ -33,6 +33,8 @@ headers = [
 
 include_directories = ['include', '.']
 
+
+
 logcerr = library(
   'logcerr',
   sources,
@@ -42,6 +44,13 @@ logcerr = library(
 )
 
 install_headers(headers, subdir: 'logcerr')
+
+
+
+pkg = import('pkgconfig')
+pkg.generate(logcerr)
+
+
 
 logcerr_dep = declare_dependency(
   link_with:           logcerr,
