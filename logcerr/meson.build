@@ -33,6 +33,7 @@ headers = [
 
 include_directories = ['include', '.']
 
+install_project = not meson.is_subproject() or get_option('install-as-subproject')
 
 
 logcerr = library(
@@ -40,16 +41,17 @@ logcerr = library(
   sources,
   dependencies:        dependencies,
   include_directories: include_directories,
-  install:             true
+  install:             install_project
 )
 
-install_headers(headers, subdir: 'logcerr')
+if install_project
+  install_headers(headers, subdir: 'logcerr')
 
 
 
-pkg = import('pkgconfig')
-pkg.generate(logcerr)
-
+  pkg = import('pkgconfig')
+  pkg.generate(logcerr)
+endif
 
 
 logcerr_dep = declare_dependency(

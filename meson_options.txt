@@ -1,1 +1,2 @@
 option('examples', type: 'boolean', value: false, description: 'Build the examples')
+option('install-as-subproject', type: 'boolean', value: true, description: 'Install if this is a subproject')
