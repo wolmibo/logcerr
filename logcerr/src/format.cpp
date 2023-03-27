@@ -79,31 +79,26 @@ namespace {
 
 
 
-  template<typename... Args>
-  [[nodiscard]] std::string format_var(std::string_view fmt, Args&&... args) {
-    #if defined(__cpp_lib_format)
-      return std::vformat(fmt, std::make_format_args(std::forward<Args>(args)...));
-    #else
-      return fmt::format(fmt::runtime(fmt), std::forward<Args>(args)...);
-    #endif
-  }
 
 
+  [[nodiscard]] std::string format_extra(
+      bool              use_color,
+      logcerr::severity level,
+      std::string_view  message
+  ) {
+    using namespace logcerr::impl::format;
 
-
-
-  [[nodiscard]] std::string_view format_extra(bool use_color, logcerr::severity level) {
     if (!use_color) {
-      return "\r  | {}{}";
+      return format("\r  | {}", message);
     }
 
     switch (level) {
       case logcerr::severity::error:
-        return "\r  \x1b[2m|\x1b[0m \x1b[1m{}{}\x1b[0m";
+        return format("\r  \x1b[2m|\x1b[0m \x1b[1m{}\x1b[0m", message);
       case logcerr::severity::debug:
-        return "\r  \x1b[2m| {}{}\x1b[0m";
+        return format("\r  \x1b[2m| {}\x1b[0m", message);
       default:
-        return "\r  \x1b[2m|\x1b[0m {}{}";
+        return format("\r  \x1b[2m|\x1b[0m {}", message);
     }
   }
 
@@ -111,27 +106,44 @@ namespace {
 
 
 
-  [[nodiscard]] std::string_view format_main(bool use_color, logcerr::severity level) {
+  [[nodiscard]] std::string format_main(
+      bool                      use_color,
+      logcerr::severity         level,
+      std::chrono::milliseconds time,
+      std::string_view          thread,
+      std::string_view          message
+  ) {
+    using namespace logcerr::impl::format;
+
+
     if (!use_color) {
       switch (level) {
         case logcerr::severity::warning:
-          return "\r[{:%H:%M:%S} {}] [Warning] {}{}";
+          return format("\r[{:%H:%M:%S} {}] [Warning] {}", time, thread, message);
         case logcerr::severity::error:
-          return "\r[{:%H:%M:%S} {}] *[Error]* {}{}";
+          return format("\r[{:%H:%M:%S} {}] *[Error]* {}", time, thread, message);
         default:
-          return "\r[{:%H:%M:%S} {}] {}{}";
+          return format("\r[{:%H:%M:%S} {}] {}", time, thread, message);
       }
     }
 
+
     switch (level) {
       case logcerr::severity::debug:
-        return "\r\x1b[2m[{:%H:%M:%S} {}] {}{}\x1b[0m";
+        return format("\r\x1b[2m[{:%H:%M:%S} {}] {}\x1b[0m",
+                        time, thread, message);
+
       case logcerr::severity::warning:
-        return "\r[{:%H:%M:%S} {}] \x1b[33m[Warning]\x1b[0m {}{}";
+        return format("\r[{:%H:%M:%S} {}] \x1b[33m[Warning]\x1b[0m {}",
+                        time, thread, message);
+
       case logcerr::severity::error:
-        return "\r\x1b[1m[{:%H:%M:%S} {}] \x1b[31m*[Error]*\x1b[39m {}{}\x1b[0m";
+        return format("\r\x1b[1m[{:%H:%M:%S} {}] \x1b[31m*[Error]*\x1b[39m {}\x1b[0m",
+                        time, thread, message);
+
       default:
-        return "\r[{:%H:%M:%S} {}] {}{}";
+        return format("\r[{:%H:%M:%S} {}] {}",
+                        time, thread, message);
     }
   }
 
@@ -151,11 +163,13 @@ namespace {
       auto term = (it + 1) == lines.end() ? terminal : std::string_view{"\n"};
 
       if (it == lines.begin()) {
-        write(std::cerr, format_var(format_main(colored, level),
-                                    logcerr::elapsed(), thread_name, *it, term));
+        write(std::cerr, format_main(colored, level,
+                                       logcerr::elapsed(), thread_name, *it));
       } else {
-        write(std::cerr, format_var(format_extra(colored, level), *it, term));
+        write(std::cerr, format_extra(colored, level, *it));
       }
+
+      write(std::cerr, term);
     }
   }
 
@@ -218,13 +232,13 @@ namespace {
           print_message_unguarded(level, lines, thread_name, "");
         } else {
           if (lines.size() == 1) {
-            write(std::cerr, format_var(format_main(logcerr::is_colored(), level),
-                                        logcerr::elapsed(), thread_name, lines.front(),
-                                        format_counter(merge)));
+            write(std::cerr, format_main(logcerr::is_colored(), level,
+                                        logcerr::elapsed(), thread_name, lines.front()));
           } else if (lines.size() > 1) {
-            write(std::cerr, format_var(format_extra(logcerr::is_colored(), level),
-                                        lines.back(), format_counter(merge)));
+            write(std::cerr, format_extra(logcerr::is_colored(), level,
+                                        lines.back()));
           }
+          write(std::cerr, format_counter(merge));
         }
 
         global_state::last_message_returned = true;
