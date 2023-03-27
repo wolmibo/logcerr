@@ -104,13 +104,20 @@ namespace {
 
 
   [[nodiscard]] std::array<long, 4> h_min_sec_ms(std::chrono::milliseconds time) {
-    long millis{time.count()};
+    const long millis{time.count()};
+
+    static constexpr long minute_s{60};
+    static constexpr long hour_min{60};
+    static constexpr long second_ms{1000};
+
+    static constexpr long minute_ms{minute_s * second_ms};
+    static constexpr long hour_ms  {hour_min * minute_ms};
 
     return {
-      (millis / 3600000),
-      (millis / 60000)   % 60,
-      (millis / 1000)    % 60,
-      millis             % 1000
+      (millis / hour_ms),
+      (millis / minute_ms) % hour_min,
+      (millis / second_ms) % minute_s,
+      millis               % second_ms
     };
   }
 
@@ -125,7 +132,7 @@ namespace {
   ) {
     using namespace logcerr::impl::format;
 
-    auto [h, m, s, ms] = h_min_sec_ms(time);
+    const auto [h, m, s, ms] = h_min_sec_ms(time);
 
     if (!use_color) {
       switch (level) {

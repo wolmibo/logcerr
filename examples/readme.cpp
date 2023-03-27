@@ -6,7 +6,7 @@
 int main() {
   logcerr::log("Hello, world!");
 
-  std::jthread async{[](){
+  const std::jthread async{[](){
     logcerr::thread_name("async");
 
     std::this_thread::sleep_for(std::chrono::milliseconds(4));
