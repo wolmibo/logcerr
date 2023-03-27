@@ -3,15 +3,12 @@
 
 #include "logcerr/log.hpp"
 
+#include <chrono>
 #include <iostream>
 #include <mutex>
 #include <optional>
 #include <span>
 #include <vector>
-
-#if !defined(__cpp_lib_format)
-#include <fmt/chrono.h>
-#endif
 
 
 
@@ -106,6 +103,19 @@ namespace {
 
 
 
+  [[nodiscard]] std::array<long, 4> h_min_sec_ms(std::chrono::milliseconds time) {
+    long millis{time.count()};
+
+    return {
+      (millis / 3600000),
+      (millis / 60000)   % 60,
+      (millis / 1000)    % 60,
+      millis             % 1000
+    };
+  }
+
+
+
   [[nodiscard]] std::string format_main(
       bool                      use_color,
       logcerr::severity         level,
@@ -115,35 +125,42 @@ namespace {
   ) {
     using namespace logcerr::impl::format;
 
+    auto [h, m, s, ms] = h_min_sec_ms(time);
 
     if (!use_color) {
       switch (level) {
         case logcerr::severity::warning:
-          return format("\r[{:%H:%M:%S} {}] [Warning] {}", time, thread, message);
+          return format("\r[{:02}:{:02}:{:02}.{:03} {}] [Warning] {}",
+                          h, m, s, ms, thread, message);
+
         case logcerr::severity::error:
-          return format("\r[{:%H:%M:%S} {}] *[Error]* {}", time, thread, message);
+          return format("\r[{:02}:{:02}:{:02}.{:03} {}] *[Error]* {}",
+                          h, m, s, ms, thread, message);
+
         default:
-          return format("\r[{:%H:%M:%S} {}] {}", time, thread, message);
+          return format("\r[{:02}:{:02}:{:02}.{:03} {}] {}",
+                          h, m, s, ms, thread, message);
       }
     }
 
 
     switch (level) {
       case logcerr::severity::debug:
-        return format("\r\x1b[2m[{:%H:%M:%S} {}] {}\x1b[0m",
-                        time, thread, message);
+        return format("\r\x1b[2m[{:02}:{:02}:{:02}.{:03} {}] {}\x1b[0m",
+                        h, m, s, ms, thread, message);
 
       case logcerr::severity::warning:
-        return format("\r[{:%H:%M:%S} {}] \x1b[33m[Warning]\x1b[0m {}",
-                        time, thread, message);
+        return format("\r[{:02}:{:02}:{:02}.{:03} {}] \x1b[33m[Warning]\x1b[0m {}",
+                        h, m, s, ms, thread, message);
 
       case logcerr::severity::error:
-        return format("\r\x1b[1m[{:%H:%M:%S} {}] \x1b[31m*[Error]*\x1b[39m {}\x1b[0m",
-                        time, thread, message);
+        return format("\r\x1b[1m[{:02}:{:02}:{:02}.{:03} {}] "
+                        "\x1b[31m*[Error]*\x1b[39m {}\x1b[0m",
+                        h, m, s, ms, thread, message);
 
       default:
-        return format("\r[{:%H:%M:%S} {}] {}",
-                        time, thread, message);
+        return format("\r[{:02}:{:02}:{:02}.{:03} {}] {}",
+                        h, m, s, ms, thread, message);
     }
   }
 
