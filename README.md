@@ -41,9 +41,10 @@ Possible output:
 ```
 [00:00:00.000 main] Hello, world!
 [00:00:00.001 main] This message will be repeated 10 times
-[00:00:00.003 main] This message will be repeated 10 times (x2)
-[00:00:00.005 async] *[Error]* This is an error from another thread
-[00:00:00.011 main] This message will be repeated 10 times (x7)
+[00:00:00.004 main] This message will be repeated 10 times (x2)
+[00:00:00.004 async] *[Error]* This is an error from another thread
+[00:00:00.005 main] This message will be repeated 10 times
+[00:00:00.012 main] This message will be repeated 10 times (x6)
 ```
 
 ## Build Requirements
