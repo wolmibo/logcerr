@@ -6,6 +6,7 @@
 
 
 int main() {
+  logcerr::output_level(logcerr::severity::debug);
   logcerr::merge_after(2);
   logcerr::log("hello, world!");
   logcerr::log("debugging enabled:  {}", logcerr::debugging_enabled());

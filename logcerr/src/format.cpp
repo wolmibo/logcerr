@@ -81,7 +81,8 @@ namespace {
   [[nodiscard]] std::string format_extra(
       bool              use_color,
       logcerr::severity level,
-      std::string_view  message
+      std::string_view  message,
+      std::string_view  terminal
   ) {
     using namespace logcerr::impl::format;
 
@@ -91,11 +92,11 @@ namespace {
 
     switch (level) {
       case logcerr::severity::error:
-        return format("\r  \x1b[2m|\x1b[0m \x1b[1m{}\x1b[0m", message);
+        return format("\r  \x1b[2m|\x1b[0m \x1b[1m{}{}\x1b[0m", message, terminal);
       case logcerr::severity::debug:
-        return format("\r  \x1b[2m| {}\x1b[0m", message);
+        return format("\r  \x1b[2m| {}{}\x1b[0m", message, terminal);
       default:
-        return format("\r  \x1b[2m|\x1b[0m {}", message);
+        return format("\r  \x1b[2m|\x1b[0m {}{}", message, terminal);
     }
   }
 
@@ -128,7 +129,8 @@ namespace {
       logcerr::severity         level,
       std::chrono::milliseconds time,
       std::string_view          thread,
-      std::string_view          message
+      std::string_view          message,
+      std::string_view          terminal
   ) {
     using namespace logcerr::impl::format;
 
@@ -137,37 +139,37 @@ namespace {
     if (!use_color) {
       switch (level) {
         case logcerr::severity::warning:
-          return format("\r[{:02}:{:02}:{:02}.{:03} {}] [Warning] {}",
-                          h, m, s, ms, thread, message);
+          return format("\r[{:02}:{:02}:{:02}.{:03} {}] [Warning] {}{}",
+                          h, m, s, ms, thread, message, terminal);
 
         case logcerr::severity::error:
-          return format("\r[{:02}:{:02}:{:02}.{:03} {}] *[Error]* {}",
-                          h, m, s, ms, thread, message);
+          return format("\r[{:02}:{:02}:{:02}.{:03} {}] *[Error]* {}{}",
+                          h, m, s, ms, thread, message, terminal);
 
         default:
-          return format("\r[{:02}:{:02}:{:02}.{:03} {}] {}",
-                          h, m, s, ms, thread, message);
+          return format("\r[{:02}:{:02}:{:02}.{:03} {}] {}{}",
+                          h, m, s, ms, thread, message, terminal);
       }
     }
 
 
     switch (level) {
       case logcerr::severity::debug:
-        return format("\r\x1b[2m[{:02}:{:02}:{:02}.{:03} {}] {}\x1b[0m",
-                        h, m, s, ms, thread, message);
+        return format("\r\x1b[2m[{:02}:{:02}:{:02}.{:03} {}] {}{}\x1b[0m",
+                        h, m, s, ms, thread, message, terminal);
 
       case logcerr::severity::warning:
-        return format("\r[{:02}:{:02}:{:02}.{:03} {}] \x1b[33m[Warning]\x1b[0m {}",
-                        h, m, s, ms, thread, message);
+        return format("\r[{:02}:{:02}:{:02}.{:03} {}] \x1b[33m[Warning]\x1b[0m {}{}",
+                        h, m, s, ms, thread, message, terminal);
 
       case logcerr::severity::error:
         return format("\r\x1b[1m[{:02}:{:02}:{:02}.{:03} {}] "
-                        "\x1b[31m*[Error]*\x1b[39m {}\x1b[0m",
-                        h, m, s, ms, thread, message);
+                        "\x1b[31m*[Error]*\x1b[39m {}{}\x1b[0m",
+                        h, m, s, ms, thread, message, terminal);
 
       default:
-        return format("\r[{:02}:{:02}:{:02}.{:03} {}] {}",
-                        h, m, s, ms, thread, message);
+        return format("\r[{:02}:{:02}:{:02}.{:03} {}] {}{}",
+                        h, m, s, ms, thread, message, terminal);
     }
   }
 
@@ -188,12 +190,10 @@ namespace {
 
       if (it == lines.begin()) {
         write(std::cerr, format_main(colored, level,
-                                       logcerr::elapsed(), thread_name, *it));
+                                       logcerr::elapsed(), thread_name, *it, term));
       } else {
-        write(std::cerr, format_extra(colored, level, *it));
+        write(std::cerr, format_extra(colored, level, *it, term));
       }
-
-      write(std::cerr, term);
     }
   }
 
@@ -257,12 +257,12 @@ namespace {
         } else {
           if (lines.size() == 1) {
             write(std::cerr, format_main(logcerr::is_colored(), level,
-                                        logcerr::elapsed(), thread_name, lines.front()));
+                                        logcerr::elapsed(), thread_name, lines.front(),
+                                        format_counter(merge)));
           } else if (lines.size() > 1) {
             write(std::cerr, format_extra(logcerr::is_colored(), level,
-                                        lines.back()));
+                                        lines.back(), format_counter(merge)));
           }
-          write(std::cerr, format_counter(merge));
         }
 
         global_state::last_message_returned = true;
