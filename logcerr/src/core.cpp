@@ -8,7 +8,6 @@
 #include <chrono>
 #include <mutex>
 #include <optional>
-#include <span>
 #include <sstream>
 #include <vector>
 
