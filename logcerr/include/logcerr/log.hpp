@@ -13,7 +13,14 @@
 
 
 #include <version>
-#if defined(__cpp_lib_format)
+
+#if defined(__cpp_lib_format) || (_LIBCPP_VERSION >= 170001 && _LIBCPP_STD_VER >= 20)
+#define STD_FORMAT
+#endif
+
+
+
+#if defined(STD_FORMAT)
 #include <format>
 #else
 #include <fmt/core.h>
@@ -23,7 +30,7 @@
 
 namespace logcerr {
 
-#if defined(__cpp_lib_format)
+#if defined(STD_FORMAT)
 namespace impl { namespace format = std; }
 #else
 namespace impl { namespace format = fmt; }
