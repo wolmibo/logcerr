@@ -10,6 +10,3 @@ Checks: >
   performance-*,
     -performance-enum-size,
   readability-*
-
-
-UseColor: true
