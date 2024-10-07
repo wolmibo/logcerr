@@ -71,6 +71,7 @@ namespace {
 
 
   void write(std::ostream& out, std::string_view message) {
+    //NOLINTNEXTLINE(*-suspicious-stringview-data-usage)
     out.write(message.data(), std::ssize(message));
   }
 
@@ -351,7 +352,7 @@ void logcerr::print_raw_sync(std::ostream& out, std::string_view message) {
 
   interrupt_merging_unguarded();
 
-  out.write(message.data(), std::ssize(message));
+  write(out, message);
 }
 
 
