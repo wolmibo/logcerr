@@ -8,6 +8,7 @@
 #include <chrono>
 #include <mutex>
 #include <optional>
+#include <ratio>
 #include <sstream>
 #include <vector>
 
@@ -20,6 +21,24 @@ namespace {
   [[nodiscard]] bool determine_colored() {
     return isatty(STDERR_FILENO) != 0;
   }
+
+
+  template<bool HRCSteady> struct use_high_resolution_clock {
+    using clock = std::chrono::steady_clock;
+  };
+
+  template<> struct use_high_resolution_clock<true> {
+    using clock = std::chrono::high_resolution_clock;
+  };
+
+  using clock = use_high_resolution_clock<
+    std::ratio_greater_v<std::chrono::steady_clock::period, std::milli> &&
+    std::chrono::high_resolution_clock::is_steady &&
+    std::ratio_greater_v<std::chrono::steady_clock::period,
+                         std::chrono::high_resolution_clock::period>
+  >::clock;
+
+  static_assert(clock::is_steady);
 }
 
 
@@ -27,7 +46,7 @@ namespace {
 
 
 namespace { namespace global_state {
-  auto                             start  {std::chrono::high_resolution_clock::now()};
+  clock::time_point                start  {clock::now()};
 
   std::atomic<logcerr::color_mode> color  {logcerr::color_mode::auto_detect};
   std::atomic<bool>                colored{determine_colored()};
@@ -160,5 +179,5 @@ std::string logcerr::thread_name(std::thread::id thread_id) {
 
 std::chrono::milliseconds logcerr::elapsed() {
   return std::chrono::duration_cast<std::chrono::milliseconds>(
-      std::chrono::high_resolution_clock::now() - global_state::start);
+      clock::now() - global_state::start);
 }
