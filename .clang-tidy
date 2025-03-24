@@ -9,4 +9,5 @@ Checks: >
     -modernize-use-trailing-return-type,
   performance-*,
     -performance-enum-size,
-  readability-*
+  readability-*,
+    -readability-identifier-length,
